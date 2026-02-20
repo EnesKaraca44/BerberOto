@@ -1,0 +1,137 @@
+@{
+    Layout = null;
+    var shop = ViewBag.Shop as BerberOto.Models.Shop;
+    var appointments = Model as List<BerberOto.Models.Appointment>;
+    var pendingCount = appointments?.Count(a => a.Status == BerberOto.Models.AppointmentStatus.Pending) ?? 0;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Randevular - @shop?.Name</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">@shop?.Name.Substring(0, Math.Min(2, shop.Name.Length)).ToUpper()</div>
+            <h2 class="sidebar-title">@shop?.Name</h2>
+            <span class="sidebar-badge">Admin Panel</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/salon/@shop?.Slug/admin/dashboard" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="/salon/@shop?.Slug/admin/randevular" class="nav-item active">
+                <i class="fa-solid fa-calendar-days"></i> Randevular
+                @if (pendingCount > 0) { <span class="badge">@pendingCount</span> }
+            </a>
+            <a href="/salon/@shop?.Slug/admin/berberler" class="nav-item"><i class="fa-solid fa-user-group"></i> Berberler</a>
+            <a href="/salon/@shop?.Slug/admin/hizmetler" class="nav-item"><i class="fa-solid fa-scissors"></i> Hizmetler</a>
+            <a href="/salon/@shop?.Slug/admin/calisma-saatleri" class="nav-item"><i class="fa-solid fa-clock"></i> Çalışma Saatleri</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/salon/@shop?.Slug" class="nav-item"><i class="fa-solid fa-store"></i> Dükkana Git</a>
+            <a href="/salon/@shop?.Slug/admin/cikis" class="nav-item logout"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fa-solid fa-calendar-days"></i> Randevu Yönetimi</h1>
+            <p>Toplam <strong>@appointments?.Count</strong> randevu</p>
+        </div>
+
+        <div class="panel">
+            @if (appointments != null && appointments.Any())
+            {
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Saat</th>
+                                <th>Müşteri</th>
+                                <th>Telefon</th>
+                                <th>Berber</th>
+                                <th>Hizmet</th>
+                                <th>Durum</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in appointments)
+                            {
+                                <tr>
+                                    <td>@a.AppointmentDate.ToString("dd.MM.yyyy")</td>
+                                    <td><strong>@a.AppointmentTime</strong></td>
+                                    <td>@a.CustomerName</td>
+                                    <td>@a.CustomerPhone</td>
+                                    <td>@a.Barber?.FullName</td>
+                                    <td>@a.Service?.Name</td>
+                                    <td>
+                                        @if (a.Status == BerberOto.Models.AppointmentStatus.Pending)
+                                        {
+                                            <span class="status-badge pending">Bekliyor</span>
+                                        }
+                                        else if (a.Status == BerberOto.Models.AppointmentStatus.Confirmed)
+                                        {
+                                            <span class="status-badge confirmed">Onaylı</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge cancelled">İptal</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            @if (a.Status == BerberOto.Models.AppointmentStatus.Pending)
+                                            {
+                                                <form method="post" action="/salon/@shop?.Slug/admin/randevu-onayla/@a.Id" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn-sm btn-approve" title="Onayla">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="/salon/@shop?.Slug/admin/randevu-iptal/@a.Id" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn-sm btn-cancel" title="İptal Et">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else if (a.Status == BerberOto.Models.AppointmentStatus.Confirmed)
+                                            {
+                                                <form method="post" action="/salon/@shop?.Slug/admin/randevu-iptal/@a.Id" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn-sm btn-cancel" title="İptal Et">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span style="color:#666; font-size:0.8rem;">—</span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa-regular fa-calendar-xmark"></i>
+                    <p>Henüz randevu yok</p>
+                </div>
+            }
+        </div>
+    </main>
+</body>
+</html>

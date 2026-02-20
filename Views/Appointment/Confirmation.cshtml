@@ -1,0 +1,132 @@
+@model BerberOto.Models.Appointment
+@{
+    ViewData["Title"] = "Randevu Onayı";
+}
+
+<div class="confirmation-page">
+    <div class="container">
+        <div class="confirmation-card" style="margin: 0 auto;">
+            <div class="confirmation-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h2 style="font-size:1.8rem; margin-bottom:0.5rem;">Randevunuz Oluşturuldu!</h2>
+            <p style="color:var(--text-secondary); margin-bottom:0;">Randevu detaylarınız aşağıdadır.</p>
+
+            <div class="confirmation-details">
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-user" style="color:var(--accent); margin-right:0.5rem;"></i> Ad Soyad</span>
+                    <span class="detail-value">@Model.CustomerName</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-phone" style="color:var(--accent); margin-right:0.5rem;"></i> Telefon</span>
+                    <span class="detail-value">@Model.CustomerPhone</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-scissors" style="color:var(--accent); margin-right:0.5rem;"></i> Hizmet</span>
+                    <span class="detail-value">@Model.Service?.Name</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-user-tie" style="color:var(--accent); margin-right:0.5rem;"></i> Berber</span>
+                    <span class="detail-value">@Model.Barber?.FullName</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-calendar" style="color:var(--accent); margin-right:0.5rem;"></i> Tarih</span>
+                    <span class="detail-value">@Model.AppointmentDate.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("tr-TR"))</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-clock" style="color:var(--accent); margin-right:0.5rem;"></i> Saat</span>
+                    <span class="detail-value">@Model.AppointmentTime</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fa-solid fa-note-sticky" style="color:var(--accent); margin-right:0.5rem;"></i> Notlar</span>
+                        <span class="detail-value">@Model.Notes</span>
+                    </div>
+                }
+            </div>
+
+            <div style="background:rgba(212,165,116,0.1); border:1px solid var(--border-glass); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1.5rem;">
+                <p style="color:var(--accent); font-size:0.85rem; margin:0;">
+                    <i class="fa-solid fa-info-circle"></i> Randevunuz onay beklemektedir. Kısa süre içinde onay mesajı alacaksınız.
+                </p>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a asp-controller="Home" asp-action="Index" class="btn-outline-accent" style="font-size:0.9rem; padding:0.7rem 1.5rem;">
+                    <i class="fa-solid fa-home"></i> Ana Sayfa
+                </a>
+                <a asp-controller="Appointment" asp-action="Create" class="btn-accent" style="font-size:0.9rem; padding:0.7rem 1.5rem;">
+                    <i class="fa-solid fa-plus"></i> Yeni Randevu
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confetti Animation -->
+<canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
+
+@section Scripts {
+    <script>
+        // Simple confetti effect
+        (function () {
+            const canvas = document.getElementById('confettiCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const colors = ['#D4A574', '#C8956C', '#E8C5A0', '#4CAF50', '#ffffff'];
+            const particles = [];
+
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: -10 - Math.random() * canvas.height,
+                    size: Math.random() * 6 + 2,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedY: Math.random() * 3 + 2,
+                    speedX: (Math.random() - 0.5) * 2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 10,
+                    opacity: 1
+                });
+            }
+
+            let frame = 0;
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                frame++;
+
+                particles.forEach(p => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.rotation += p.rotationSpeed;
+
+                    if (frame > 60) {
+                        p.opacity -= 0.01;
+                    }
+
+                    if (p.opacity <= 0) return;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation * Math.PI / 180);
+                    ctx.globalAlpha = p.opacity;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                    ctx.restore();
+                });
+
+                if (frame < 200) {
+                    requestAnimationFrame(animate);
+                } else {
+                    canvas.remove();
+                }
+            }
+
+            animate();
+        })();
+    </script>
+}

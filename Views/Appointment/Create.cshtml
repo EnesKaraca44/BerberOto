@@ -1,0 +1,249 @@
+@model BerberOto.Models.AppointmentViewModel
+@{
+    ViewData["Title"] = "Randevu Al";
+}
+
+<div class="appointment-page">
+    <div class="container">
+        <div class="appointment-container">
+            <div class="appointment-header">
+                <h1 class="gradient-text">Randevu Oluştur</h1>
+                <p>Birkaç adımda randevunuzu kolayca oluşturun</p>
+            </div>
+
+            <!-- Step Progress -->
+            <div class="step-progress">
+                <div class="step-progress-item active" data-step="1">
+                    <div class="step-progress-circle">1</div>
+                    <div class="step-progress-label">Hizmet</div>
+                    <div class="step-progress-line"></div>
+                </div>
+                <div class="step-progress-item" data-step="2">
+                    <div class="step-progress-circle">2</div>
+                    <div class="step-progress-label">Berber & Tarih</div>
+                    <div class="step-progress-line"></div>
+                </div>
+                <div class="step-progress-item" data-step="3">
+                    <div class="step-progress-circle">3</div>
+                    <div class="step-progress-label">Bilgiler</div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form asp-action="Create" method="post" id="appointmentForm">
+                @Html.AntiForgeryToken()
+                <div class="form-card">
+
+                    <!-- STEP 1: Service Selection -->
+                    <div class="form-step active" id="step1">
+                        <h3><i class="fa-solid fa-scissors"></i> Hizmet Seçin</h3>
+                        <div class="service-select-grid" id="serviceGrid">
+                            @if (Model.Services != null)
+                            {
+                                @foreach (var svc in Model.Services)
+                                {
+                                    var serviceData = ViewBag.ServiceDetails as List<BerberOto.Models.Service>;
+                                    <div class="service-select-card" data-service-id="@svc.Value" onclick="selectService(this, '@svc.Value')">
+                                        <div class="card-icon"><i class="fa-solid fa-cut"></i></div>
+                                        <div class="card-name">@svc.Text</div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <input type="hidden" asp-for="ServiceId" id="ServiceId" />
+                        <span asp-validation-for="ServiceId" class="text-danger" style="font-size:0.85rem;"></span>
+
+                        <div class="form-nav" style="justify-content: flex-end;">
+                            <button type="button" class="btn-next" onclick="nextStep(2)" id="btnStep1Next">
+                                Devam <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Barber, Date, Time -->
+                    <div class="form-step" id="step2">
+                        <h3><i class="fa-solid fa-user-tie"></i> Berber & Tarih Seçin</h3>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">Berber</label>
+                            <select asp-for="BarberId" asp-items="Model.Barbers" class="form-select-custom" id="BarberId" onchange="loadTimeSlots()">
+                                <option value="">-- Berber Seçin --</option>
+                            </select>
+                            <span asp-validation-for="BarberId" class="text-danger" style="font-size:0.85rem;"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">Tarih</label>
+                            <input asp-for="AppointmentDate" type="date" class="form-control-custom" id="AppointmentDate"
+                                   min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+                                   max="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")"
+                                   onchange="loadTimeSlots()" />
+                            <span asp-validation-for="AppointmentDate" class="text-danger" style="font-size:0.85rem;"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">Saat</label>
+                            <div id="timeSlotsContainer">
+                                <p style="color:var(--text-muted); font-size:0.9rem;">
+                                    <i class="fa-solid fa-info-circle"></i> Berber ve tarih seçtikten sonra müsait saatler görünecektir.
+                                </p>
+                            </div>
+                            <input type="hidden" asp-for="AppointmentTime" id="AppointmentTime" />
+                            <span asp-validation-for="AppointmentTime" class="text-danger" style="font-size:0.85rem;"></span>
+                        </div>
+
+                        <div class="form-nav">
+                            <button type="button" class="btn-prev" onclick="prevStep(1)">
+                                <i class="fa-solid fa-arrow-left"></i> Geri
+                            </button>
+                            <button type="button" class="btn-next" onclick="nextStep(3)">
+                                Devam <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: Personal Info -->
+                    <div class="form-step" id="step3">
+                        <h3><i class="fa-solid fa-user"></i> Kişisel Bilgiler</h3>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">Ad Soyad</label>
+                            <input asp-for="CustomerName" class="form-control-custom" placeholder="Adınız ve soyadınız" />
+                            <span asp-validation-for="CustomerName" class="text-danger" style="font-size:0.85rem;"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">Telefon</label>
+                            <input asp-for="CustomerPhone" class="form-control-custom" placeholder="05XX XXX XX XX" />
+                            <span asp-validation-for="CustomerPhone" class="text-danger" style="font-size:0.85rem;"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label-custom">Notlar (İsteğe Bağlı)</label>
+                            <textarea asp-for="Notes" class="form-control-custom" rows="3" placeholder="Eklemek istediğiniz notlar..."></textarea>
+                        </div>
+
+                        <div class="form-nav">
+                            <button type="button" class="btn-prev" onclick="prevStep(2)">
+                                <i class="fa-solid fa-arrow-left"></i> Geri
+                            </button>
+                            <button type="submit" class="btn-next" id="submitBtn">
+                                <i class="fa-solid fa-check"></i> Randevuyu Onayla
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Service selection
+        function selectService(card, serviceId) {
+            document.querySelectorAll('.service-select-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('ServiceId').value = serviceId;
+        }
+
+        // Step navigation
+        let currentStep = 1;
+
+        function nextStep(step) {
+            // Validate current step
+            if (currentStep === 1 && !document.getElementById('ServiceId').value) {
+                showToast('Lütfen bir hizmet seçin.');
+                return;
+            }
+            if (currentStep === 2) {
+                if (!document.getElementById('BarberId').value) {
+                    showToast('Lütfen bir berber seçin.');
+                    return;
+                }
+                if (!document.getElementById('AppointmentDate').value) {
+                    showToast('Lütfen bir tarih seçin.');
+                    return;
+                }
+                if (!document.getElementById('AppointmentTime').value) {
+                    showToast('Lütfen bir saat seçin.');
+                    return;
+                }
+            }
+
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + step).classList.add('active');
+            updateProgress(step);
+            currentStep = step;
+        }
+
+        function prevStep(step) {
+            document.getElementById('step' + currentStep).classList.remove('active');
+            document.getElementById('step' + step).classList.add('active');
+            updateProgress(step);
+            currentStep = step;
+        }
+
+        function updateProgress(step) {
+            document.querySelectorAll('.step-progress-item').forEach((item, index) => {
+                item.classList.remove('active', 'completed');
+                if (index + 1 < step) item.classList.add('completed');
+                if (index + 1 === step) item.classList.add('active');
+            });
+        }
+
+        // Load time slots
+        function loadTimeSlots() {
+            const barberId = document.getElementById('BarberId').value;
+            const date = document.getElementById('AppointmentDate').value;
+            const container = document.getElementById('timeSlotsContainer');
+
+            if (!barberId || !date) {
+                container.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem;"><i class="fa-solid fa-info-circle"></i> Berber ve tarih seçtikten sonra müsait saatler görünecektir.</p>';
+                return;
+            }
+
+            container.innerHTML = '<div class="slots-loading"><div class="loading-spinner"></div><p style="margin-top:0.5rem;">Müsait saatler yükleniyor...</p></div>';
+
+            fetch(`/Appointment/GetAvailableSlots?barberId=${barberId}&date=${date}`)
+                .then(res => res.json())
+                .then(slots => {
+                    if (slots.length === 0) {
+                        container.innerHTML = '<p style="color:var(--accent); font-size:0.9rem;"><i class="fa-solid fa-circle-exclamation"></i> Bu tarihte müsait saat bulunmamaktadır.</p>';
+                        return;
+                    }
+
+                    let html = '<div class="time-slots-grid">';
+                    slots.forEach(slot => {
+                        html += `<div class="time-slot" onclick="selectTime(this, '${slot.time}')">${slot.display}</div>`;
+                    });
+                    html += '</div>';
+                    container.innerHTML = html;
+                })
+                .catch(err => {
+                    container.innerHTML = '<p style="color:#ff6b6b; font-size:0.9rem;"><i class="fa-solid fa-triangle-exclamation"></i> Saatler yüklenirken bir hata oluştu.</p>';
+                });
+        }
+
+        function selectTime(slot, time) {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            slot.classList.add('selected');
+            document.getElementById('AppointmentTime').value = time;
+        }
+
+        // Simple toast notification
+        function showToast(message) {
+            let toast = document.getElementById('customToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'customToast';
+                toast.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--bg-card);border:1px solid var(--accent);color:var(--accent);padding:0.8rem 1.5rem;border-radius:var(--radius-sm);font-size:0.9rem;z-index:9999;opacity:0;transition:opacity 0.3s;box-shadow:var(--shadow-md);';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+        }
+    </script>
+}

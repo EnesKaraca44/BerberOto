@@ -1,0 +1,227 @@
+﻿@model List<BerberOto.Models.Shop>
+@{
+    ViewData["Title"] = "Platform";
+}
+
+<!-- HERO SECTION -->
+<section class="hero-section">
+    <canvas id="particles-canvas"></canvas>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fa-solid fa-award"></i>
+                        Premium Berber Platformu
+                    </div>
+                    <h1 class="hero-title">
+                        Berberini Bul,<br />
+                        <span class="gradient-text">Randevunu Al</span>
+                    </h1>
+                    <p class="hero-description">
+                        Şehrinizin en iyi berber dükkanlarını keşfedin. Online randevu alın, beklemeyin.
+                        Hızlı, kolay ve güvenilir randevu sistemi.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#salons" class="btn-accent">
+                            <i class="fa-solid fa-search"></i> Salonları Keşfet
+                        </a>
+                        <a href="#nasil-calisir" class="btn-outline-accent">
+                            <i class="fa-solid fa-circle-info"></i> Nasıl Çalışır?
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Count</span>
+                            <div class="stat-label">Kayıtlı Dükkan</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Sum(s => s.Barbers.Count)</span>
+                            <div class="stat-label">Uzman Berber</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">7/24</span>
+                            <div class="stat-label">Online Randevu</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+                <div style="width:350px; height:400px; border-radius:var(--radius-xl); background:var(--gradient-card); border:1px solid var(--border-glass); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+                    <div style="text-align:center;">
+                        <i class="fa-solid fa-scissors" style="font-size:4rem; color:var(--accent); opacity:0.8; animation: float 3s ease-in-out infinite;"></i>
+                        <p style="color:var(--accent); margin-top:1.5rem; font-family:var(--font-heading); font-size:1.3rem;">BerberOto</p>
+                        <p style="color:var(--text-muted); font-size:0.85rem;">Online Randevu Platformu</p>
+                    </div>
+                    <div style="position:absolute; inset:0; background: radial-gradient(circle at 30% 30%, rgba(212,165,116,0.08) 0%, transparent 60%);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+@@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
+}
+</style>
+
+<!-- SHOPS SECTION -->
+<section class="section" id="salons">
+    <div class="container">
+        <div class="text-center">
+            <div class="section-divider"></div>
+            <h2 class="section-title reveal">Berber Salonları</h2>
+            <p class="section-subtitle reveal">Anlaşmalı berber dükkanlarını keşfedin ve hemen randevu alın</p>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <div class="text-center" style="padding: 3rem;">
+                <i class="fa-solid fa-store" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                <p style="color: var(--text-muted); font-size: 1.1rem;">Henüz kayıtlı dükkan bulunmuyor.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var shop in Model)
+                {
+                    <div class="col-lg-4 col-md-6">
+                        <a href="/salon/@shop.Slug" class="shop-card-link">
+                            <div class="shop-card reveal">
+                                <div class="shop-card-header">
+                                    <div class="shop-avatar">
+                                        @shop.Name.Substring(0, Math.Min(2, shop.Name.Length)).ToUpper()
+                                    </div>
+                                    <div>
+                                        <h4 class="shop-name">@shop.Name</h4>
+                                        <div class="shop-city"><i class="fa-solid fa-location-dot"></i> @(shop.City ?? "Türkiye")</div>
+                                    </div>
+                                </div>
+                                <p class="shop-description">@(shop.Description?.Length > 100 ? shop.Description.Substring(0, 100) + "..." : shop.Description)</p>
+                                <div class="shop-card-meta">
+                                    <span><i class="fa-solid fa-user-tie"></i> @shop.Barbers.Count Berber</span>
+                                    <span><i class="fa-solid fa-scissors"></i> @shop.Services.Count Hizmet</span>
+                                </div>
+                                <div class="shop-card-footer">
+                                    <span class="shop-btn">Dükkanı Görüntüle <i class="fa-solid fa-arrow-right"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-dark" id="nasil-calisir">
+    <div class="container">
+        <div class="text-center">
+            <div class="section-divider"></div>
+            <h2 class="section-title reveal">Nasıl Çalışır?</h2>
+            <p class="section-subtitle reveal">3 kolay adımda randevunuzu oluşturun</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6">
+                <div class="step-card reveal">
+                    <div class="step-number">1</div>
+                    <h4>Salon Seçin</h4>
+                    <p>Listedeki berber dükkanlarından birini seçin</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="step-card reveal reveal-delay-1">
+                    <div class="step-number">2</div>
+                    <h4>Hizmet & Berber</h4>
+                    <p>İstediğiniz hizmet ve berberi seçin</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="step-card reveal reveal-delay-2">
+                    <div class="step-number">3</div>
+                    <h4>Randevu Alın</h4>
+                    <p>Tarih ve saat seçip randevunuzu onaylayın</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WHY US -->
+<section class="section" id="neden-biz">
+    <div class="container">
+        <div class="text-center">
+            <div class="section-divider"></div>
+            <h2 class="section-title reveal">Neden BerberOto?</h2>
+            <p class="section-subtitle reveal">Randevu almanın en kolay ve hızlı yolu</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="contact-card reveal" style="min-height:220px;">
+                    <div class="contact-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <h5>Hızlı & Kolay</h5>
+                    <p>Sadece birkaç tıklama ile randevunuzu oluşturun</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="contact-card reveal reveal-delay-1" style="min-height:220px;">
+                    <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
+                    <h5>7/24 Erişim</h5>
+                    <p>İstediğiniz zaman, istediğiniz yerden randevu alın</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="contact-card reveal reveal-delay-2" style="min-height:220px;">
+                    <div class="contact-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h5>Güvenilir</h5>
+                    <p>Anlaşmalı ve doğrulanmış berber salonları</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="contact-card reveal reveal-delay-3" style="min-height:220px;">
+                    <div class="contact-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+                    <h5>Mobil Uyumlu</h5>
+                    <p>Telefonunuzdan kolayca kullanın</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT SECTION -->
+<section class="section section-dark" id="iletisim">
+    <div class="container">
+        <div class="text-center">
+            <div class="section-divider"></div>
+            <h2 class="section-title reveal">İletişim</h2>
+            <p class="section-subtitle reveal">Sorularınız için bize ulaşın</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6">
+                <div class="contact-card reveal">
+                    <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+                    <h5>E-posta</h5>
+                    <p>info@@berberoto.com</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="contact-card reveal reveal-delay-1">
+                    <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+                    <h5>Telefon</h5>
+                    <p>+90 (212) 555 0142</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="contact-card reveal reveal-delay-2">
+                    <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    <h5>Konum</h5>
+                    <p>İstanbul, Türkiye</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

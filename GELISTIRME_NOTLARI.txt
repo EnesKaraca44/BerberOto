@@ -1,0 +1,86 @@
+# Proje Geliştirme Notları (20.02.2026)
+
+Bu belge, Berber Randevu Sistemi projesine son eklenen özelliklerin ve yapılan teknik değişikliklerin özetini içerir.
+
+## 1. Admin Paneli Özelliği (Giriş & Yönetim)
+
+Her dükkan sahibinin kendi randevularını ve işletmesini yönetebilmesi için bir admin paneli geliştirildi.
+
+### Yapılan Değişiklikler:
+- **Model:** `Shop.cs` modeline `Password` alanı eklendi (Varsayılan: `admin123`).
+- **Veritabanı:** `AppDbContext.cs` seed verilerine şifreler eklendi.
+- **Session:** Admin girişi için `Program.cs` dosyasına Session (oturum) yönetimi eklendi.
+- **Controller:** `AdminController.cs` oluşturuldu.
+  - Giriş Yap (`/salon/{slug}/admin`)
+  - Dashboard (Özet ekranı)
+  - Randevular (Onayla/İptal)
+  - Berber Yönetimi (Ekle/Sil)
+  - Hizmet Yönetimi (Ekle/Sil)
+  - Çalışma Saatleri Yönetimi
+
+### Eklenen Dosyalar:
+- `Controllers/AdminController.cs`
+- `Views/Admin/Login.cshtml`
+- `Views/Admin/Dashboard.cshtml`
+- `Views/Admin/Appointments.cshtml`
+- `Views/Admin/Barbers.cshtml`
+- `Views/Admin/Services.cshtml`
+- `wwwroot/css/admin.css`
+
+---
+
+## 2. SMS Bildirim Sistemi
+
+Müşteri randevu aldığında otomatik bilgilendirme SMS'i gönderilmesi sağlandı.
+
+### Yapılan Değişiklikler:
+- **Servis Katmanı:** `ISmsService` arayüzü oluşturuldu.
+- **Geliştirme Modu:** `LogSmsService.cs` (SMS'leri konsola yazar, bakiye harcamaz).
+- **Canlı Mod:** `NetgsmSmsService.cs` (Netgsm API kullanarak gerçek SMS atar).
+- **Entegrasyon:** `ShopController` içinde randevu oluşturulduktan sonra SMS gönderme kodu eklendi.
+- **Hatırlatma Servisi:** `AppointmentReminderService.cs` (Background Service) her 2 dakikada bir çalışarak yaklaşan randevuları (1 saat kala) kontrol eder ve hatırlatma SMS'i gönderir.
+- **Mesaj İçeriği:** Tarih, Saat, Berber Adı ve Hizmet bilgisini içerir.
+
+### Nasıl Aktif Edilir?
+`Program.cs` dosyasında şu satırı değiştirerek gerçek SMS moduna geçilebilir:
+```csharp
+// Geliştirme için:
+builder.Services.AddSingleton<ISmsService, LogSmsService>();
+
+// Gerçek SMS için (Netgsm bilgileri appsettings.json'a girilmeli):
+// builder.Services.AddSingleton<ISmsService, NetgsmSmsService>();
+```
+
+---
+
+## 3. Çalışma Saatleri (Working Hours)
+
+Dükkanların çalışma günlerini ve saatlerini yönetebilmesi sağlandı.
+
+### Yapılan Değişiklikler:
+- **Model:** `WorkSchedule.cs` modeli oluşturuldu (Gün, Açılış, Kapanış, Kapalı mı).
+- **Veritabanı:** `AppDbContext` içine `WorkSchedules` tablosu ve varsayılan veriler eklendi.
+- **Randevu Sistemi:** `GetAvailableSlots` API'si güncellendi; kapalı günlerde veya mesai dışı saatlerde randevu verilmiyor.
+- **Görünüm:**
+  - Dükkan detay sayfasına (`Detail.cshtml`) bugün vurgulu "Çalışma Saatleri" tablosu eklendi.
+  - Admin paneline "Çalışma Saatleri" yönetim sayfası eklendi (`Schedule.cshtml`).
+
+---
+
+## 4. Dosya Yapısı ve Önemli Yollar
+
+| Dosya | Açıklama |
+|---|---|
+| `Controllers/AdminController.cs` | Tüm yönetim paneli mantığı |
+| `Controllers/ShopController.cs` | Dükkan detay, randevu ve SMS işlemleri |
+| `Models/Shop.cs` | Dükkan şifresi ve ilişkiler |
+| `Models/WorkSchedule.cs` | Çalışma saatleri modeli |
+| `Views/Admin/*` | Yönetim paneli sayfaları |
+| `wwwroot/css/admin.css` | Panel tasarımı |
+| `Services/ISmsService.cs` | SMS gönderim altyapısı |
+
+## 5. Kullanıcı Bilgileri (Varsayılan)
+
+- **Admin Giriş Linki:** `/salon/{dükkan-linki}/admin`
+- **Alternatif Giriş:** Dükkan sayfasının en altındaki "Dükkan Sahibi Girişi" linki.
+- **Varsayılan Şifre:** `admin123`

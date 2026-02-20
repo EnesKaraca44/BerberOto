@@ -1,0 +1,69 @@
+@model BerberOto.Models.Shop
+@{
+    ViewData["Title"] = "Dükkan Kayıt";
+}
+
+<div class="appointment-page">
+    <div class="container">
+        <div class="appointment-container" style="max-width:650px;">
+            <div class="appointment-header">
+                <h1 class="gradient-text">Dükkanınızı Kaydedin</h1>
+                <p>Berber dükkanınızı ücretsiz kaydedin ve online randevu almaya başlayın</p>
+            </div>
+
+            <form asp-action="Register" method="post">
+                @Html.AntiForgeryToken()
+                <div class="form-card">
+                    <h3><i class="fa-solid fa-store"></i> Dükkan Bilgileri</h3>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">Dükkan Adı *</label>
+                        <input asp-for="Name" class="form-control-custom" placeholder="Örn: Ahmet Berber" />
+                        <span asp-validation-for="Name" class="text-danger" style="font-size:0.85rem;"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">Yetkili Adı *</label>
+                        <input asp-for="OwnerName" class="form-control-custom" placeholder="Adınız soyadınız" />
+                        <span asp-validation-for="OwnerName" class="text-danger" style="font-size:0.85rem;"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label-custom">Telefon</label>
+                            <input asp-for="Phone" class="form-control-custom" placeholder="05XX XXX XX XX" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label-custom">Şehir</label>
+                            <input asp-for="City" class="form-control-custom" placeholder="Örn: İstanbul" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">Adres</label>
+                        <input asp-for="Address" class="form-control-custom" placeholder="Dükkan adresiniz" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">Açıklama</label>
+                        <textarea asp-for="Description" class="form-control-custom" rows="3" placeholder="Dükkanınızı kısaca tanıtın..."></textarea>
+                    </div>
+
+                    <div style="background:rgba(212,165,116,0.08); border:1px solid var(--border-glass); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1.5rem;">
+                        <p style="color:var(--text-secondary); font-size:0.85rem; margin:0;">
+                            <i class="fa-solid fa-info-circle" style="color:var(--accent);"></i>
+                            Kaydolduğunuzda otomatik olarak 3 temel hizmet ve berber profiliniz oluşturulacaktır.
+                            Dükkanınıza <strong style="color:var(--accent);">berberoto.com/salon/dukkan-adiniz</strong> adresinden ulaşılabilecektir.
+                        </p>
+                    </div>
+
+                    <div class="form-nav" style="justify-content: center;">
+                        <button type="submit" class="btn-next" style="min-width:250px;">
+                            <i class="fa-solid fa-check"></i> Dükkanımı Kaydet
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

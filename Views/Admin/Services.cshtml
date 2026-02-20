@@ -1,0 +1,124 @@
+@{
+    Layout = null;
+    var shop = ViewBag.Shop as BerberOto.Models.Shop;
+    var services = Model as List<BerberOto.Models.Service>;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hizmetler - @shop?.Name</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">@shop?.Name.Substring(0, Math.Min(2, shop.Name.Length)).ToUpper()</div>
+            <h2 class="sidebar-title">@shop?.Name</h2>
+            <span class="sidebar-badge">Admin Panel</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/salon/@shop?.Slug/admin/dashboard" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="/salon/@shop?.Slug/admin/randevular" class="nav-item"><i class="fa-solid fa-calendar-days"></i> Randevular</a>
+            <a href="/salon/@shop?.Slug/admin/berberler" class="nav-item"><i class="fa-solid fa-user-group"></i> Berberler</a>
+            <a href="/salon/@shop?.Slug/admin/hizmetler" class="nav-item active"><i class="fa-solid fa-scissors"></i> Hizmetler</a>
+            <a href="/salon/@shop?.Slug/admin/calisma-saatleri" class="nav-item"><i class="fa-solid fa-clock"></i> Çalışma Saatleri</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/salon/@shop?.Slug" class="nav-item"><i class="fa-solid fa-store"></i> Dükkana Git</a>
+            <a href="/salon/@shop?.Slug/admin/cikis" class="nav-item logout"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fa-solid fa-scissors"></i> Hizmet Yönetimi</h1>
+            <p><strong>@services?.Count</strong> hizmet kayıtlı</p>
+        </div>
+
+        <!-- ADD FORM -->
+        <div class="panel" style="margin-bottom:1.5rem;">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-plus-circle"></i> Yeni Hizmet Ekle</h2>
+            </div>
+            <form method="post" action="/salon/@shop?.Slug/admin/hizmet-ekle" class="admin-form">
+                @Html.AntiForgeryToken()
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Hizmet Adı *</label>
+                        <input type="text" name="Name" required placeholder="ör. Saç Kesimi" />
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <input type="text" name="Description" placeholder="Kısa açıklama" />
+                    </div>
+                    <div class="form-group" style="max-width:120px;">
+                        <label>Süre (dk) *</label>
+                        <input type="number" name="DurationMinutes" required placeholder="30" min="5" />
+                    </div>
+                    <div class="form-group" style="max-width:120px;">
+                        <label>Fiyat (₺) *</label>
+                        <input type="number" name="Price" required placeholder="200" min="0" step="10" />
+                    </div>
+                    <div class="form-group" style="align-self:flex-end;">
+                        <button type="submit" class="btn-primary">
+                            <i class="fa-solid fa-plus"></i> Ekle
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- LIST -->
+        <div class="panel">
+            @if (services != null && services.Any())
+            {
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Hizmet</th>
+                                <th>Açıklama</th>
+                                <th>Süre</th>
+                                <th>Fiyat</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in services)
+                            {
+                                <tr>
+                                    <td><strong>@s.Name</strong></td>
+                                    <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">@s.Description</td>
+                                    <td>@s.DurationMinutes dk</td>
+                                    <td><strong>@s.Price.ToString("N0") ₺</strong></td>
+                                    <td>
+                                        <form method="post" action="/salon/@shop?.Slug/admin/hizmet-sil/@s.Id" style="display:inline;" onsubmit="return confirm('Bu hizmeti silmek istediğinize emin misiniz?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn-sm btn-cancel" title="Sil">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa-regular fa-rectangle-list"></i>
+                    <p>Henüz hizmet eklenmemiş</p>
+                </div>
+            }
+        </div>
+    </main>
+</body>
+</html>

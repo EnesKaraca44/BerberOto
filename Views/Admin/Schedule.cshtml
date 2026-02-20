@@ -1,0 +1,141 @@
+@{
+    Layout = null;
+    var shop = ViewBag.Shop as BerberOto.Models.Shop;
+    var schedules = Model as List<BerberOto.Models.WorkSchedule>;
+    var dayNames = new Dictionary<DayOfWeek, string>
+    {
+        { DayOfWeek.Monday, "Pazartesi" },
+        { DayOfWeek.Tuesday, "Salı" },
+        { DayOfWeek.Wednesday, "Çarşamba" },
+        { DayOfWeek.Thursday, "Perşembe" },
+        { DayOfWeek.Friday, "Cuma" },
+        { DayOfWeek.Saturday, "Cumartesi" },
+        { DayOfWeek.Sunday, "Pazar" }
+    };
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Çalışma Saatleri - @shop?.Name</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+    <style>
+        .schedule-row {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.8rem 1.3rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.2s;
+        }
+        .schedule-row:hover { background: rgba(212,165,116,0.03); }
+        .schedule-row:last-child { border-bottom: none; }
+        .day-name {
+            width: 120px; font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .time-inputs { display: flex; gap: 0.5rem; align-items: center; }
+        .time-inputs input[type="time"] {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: #f0f0f0;
+            padding: 0.5rem 0.6rem; font-size: 0.85rem;
+        }
+        .time-inputs input[type="time"]:focus {
+            outline: none; border-color: #D4A574;
+        }
+        .closed-toggle {
+            display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.85rem; color: #a0a0b8;
+        }
+        .closed-toggle input[type="checkbox"] {
+            width: 18px; height: 18px; accent-color: #ff6b7a;
+            cursor: pointer;
+        }
+        .day-closed { opacity: 0.4; }
+        .day-closed .day-name { text-decoration: line-through; color: #ff6b7a; }
+        .save-bar {
+            padding: 1rem 1.3rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: flex-end;
+        }
+        .time-separator { color: #666; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">@shop?.Name.Substring(0, Math.Min(2, shop.Name.Length)).ToUpper()</div>
+            <h2 class="sidebar-title">@shop?.Name</h2>
+            <span class="sidebar-badge">Admin Panel</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/salon/@shop?.Slug/admin/dashboard" class="nav-item"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+            <a href="/salon/@shop?.Slug/admin/randevular" class="nav-item"><i class="fa-solid fa-calendar-days"></i> Randevular</a>
+            <a href="/salon/@shop?.Slug/admin/berberler" class="nav-item"><i class="fa-solid fa-user-group"></i> Berberler</a>
+            <a href="/salon/@shop?.Slug/admin/hizmetler" class="nav-item"><i class="fa-solid fa-scissors"></i> Hizmetler</a>
+            <a href="/salon/@shop?.Slug/admin/calisma-saatleri" class="nav-item active"><i class="fa-solid fa-clock"></i> Çalışma Saatleri</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="/salon/@shop?.Slug" class="nav-item"><i class="fa-solid fa-store"></i> Dükkana Git</a>
+            <a href="/salon/@shop?.Slug/admin/cikis" class="nav-item logout"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1><i class="fa-solid fa-clock"></i> Çalışma Saatleri</h1>
+            <p>Her gün için açılış/kapanış saatleri ve kapalı günleri belirleyin</p>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-calendar-week"></i> Haftalık Program</h2>
+            </div>
+            <form method="post" action="/salon/@shop?.Slug/admin/calisma-saatleri">
+                @Html.AntiForgeryToken()
+
+                @if (schedules != null)
+                {
+                    @foreach (var s in schedules)
+                    {
+                        <div class="schedule-row @(s.IsClosed ? "day-closed" : "")" id="row-@s.Id">
+                            <input type="hidden" name="Ids" value="@s.Id" />
+                            <div class="day-name">
+                                <i class="fa-regular fa-calendar"></i>
+                                @dayNames[s.DayOfWeek]
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" name="OpenTimes" value="@s.OpenTime" />
+                                <span class="time-separator">—</span>
+                                <input type="time" name="CloseTimes" value="@s.CloseTime" />
+                            </div>
+                            <div class="closed-toggle">
+                                <input type="checkbox" name="ClosedDays" value="@s.Id"
+                                    @(s.IsClosed ? "checked" : "")
+                                    onchange="toggleRow(this, @s.Id)" />
+                                <span>Kapalı</span>
+                            </div>
+                        </div>
+                    }
+                }
+
+                <div class="save-bar">
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-floppy-disk"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function toggleRow(checkbox, id) {
+            document.getElementById('row-' + id).classList.toggle('day-closed', checkbox.checked);
+        }
+    </script>
+</body>
+</html>
